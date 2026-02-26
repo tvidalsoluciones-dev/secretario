@@ -50,13 +50,6 @@
         .app-header h1 {
             font-size: 1.6rem;
             font-weight: 700;
-            margin-bottom: 5px;
-        }
-
-        .app-header p {
-            font-size: 0.9rem;
-            opacity: 0.8;
-            font-weight: 300;
         }
 
         .container {
@@ -93,21 +86,15 @@
             border-left-color: var(--danger);
         }
 
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 20px;
-        }
-
         .name {
             font-size: 1.2rem;
             font-weight: 700;
             color: var(--primary);
             text-transform: uppercase;
+            margin-bottom: 15px;
+            display: block;
         }
 
-        /* Category Selector */
         .cat-selector {
             display: flex;
             background: #f1f5f9;
@@ -126,8 +113,6 @@
             cursor: pointer;
             border-radius: 10px;
             color: #64748b;
-            text-transform: uppercase;
-            transition: 0.2s;
         }
 
         .cat-btn.active-pub {
@@ -210,17 +195,11 @@
             transition: 0.2s;
         }
 
-        input:focus {
-            background: white;
-            box-shadow: 0 0 0 2px #cbd5e1;
-        }
-
         textarea {
             height: 75px;
             text-align: left;
             padding: 12px;
             font-size: 0.9rem;
-            font-weight: 400;
         }
 
         .footer {
@@ -251,7 +230,6 @@
             justify-content: center;
             gap: 10px;
             cursor: pointer;
-            box-shadow: 0 10px 15px -3px rgba(37, 211, 102, 0.3);
         }
 
         .hidden {
@@ -262,79 +240,74 @@
 
 <body>
     <header class="app-header">
-        <h1 id="g-label">SISTEMA DE INFORMES</h1>
+        <h1 id="g-label">INFORME DE GRUPO</h1>
         <p id="m-label">Cargando...</p>
     </header>
     <main class="container" id="list"></main>
     <div class="footer" id="f-box">
-        <button class="btn-send" onclick="send()"><span>ENVIAR INFORME POR WHATSAPP</span></button>
+        <button class="btn-send" onclick="send()"><span>ENVIAR POR WHATSAPP</span></button>
     </div>
 
     <script>
         const params = new URLSearchParams(window.location.search);
         const g = params.get('g') || "";
         const m = params.get('m') || "";
-        const d = params.get('d') || "";
+        const token = params.get('t') || "";
         const s = params.get('s') || "";
 
-        const list = document.getElementById('list');
+        const CAT_CODES = { "P": "PUBLICADOR", "A": "AUXILIAR", "R": "REGULAR" };
         const publishers = [];
         let state = [];
 
-        if (!d) {
-            document.getElementById('g-label').innerText = "ESPERANDO DATOS";
-            list.innerHTML = '<div style="text-align:center;padding:40px;color:#64748b">Use un link oficial para cargar el grupo.</div>';
-            document.getElementById('f-box').classList.add('hidden');
-        } else {
-            const parts = d.split('|');
-            for (let i = 0; i < parts.length; i += 2) {
-                if (parts[i]) {
-                    const name = parts[i];
-                    const cat = parts[i + 1] || "Publicador";
-                    publishers.push({ name, cat });
-                    const isReg = cat.toLowerCase().includes('regular') || cat.toLowerCase().includes('especial');
-                    const isAux = cat.toLowerCase().includes('auxiliar');
-                    state.push({
-                        type: isReg ? 'REGULAR' : (isAux ? 'AUXILIAR' : 'PUBLICADOR'),
-                        participo: (isReg || isAux) ? 'SI' : 'NO'
-                    });
+        function decodeToken(str) {
+            try { return decodeURIComponent(escape(window.atob(str))); }
+            catch (e) { return null; }
+        }
+
+        if (token) {
+            const raw = decodeToken(token);
+            if (raw) {
+                const parts = raw.split('*');
+                for (let i = 0; i < parts.length; i += 2) {
+                    if (parts[i]) {
+                        const name = parts[i];
+                        const code = parts[i + 1] || "P";
+                        const type = CAT_CODES[code] || "PUBLICADOR";
+                        publishers.push({ name });
+                        state.push({ type, participo: (type !== 'PUBLICADOR' ? 'SI' : 'NO') });
+                    }
                 }
+                render();
             }
-            render();
         }
 
         function render() {
-            document.getElementById('g-label').innerText = `INFORME GRUPO ${g}`;
+            document.getElementById('g-label').innerText = `GRUPO ${g}`;
             document.getElementById('m-label').innerText = `Mes de ${m}`;
+            const list = document.getElementById('list');
             list.innerHTML = '';
             publishers.forEach((p, i) => {
                 const card = document.createElement('div');
                 card.id = `c-${i}`;
                 updateCardStyle(card, i);
-
                 card.innerHTML = `
-                    <div class="card-header"><span class="name">${p.name}</span></div>
-                    
-                    <label>Categoría este mes</label>
+                    <span class="name">${p.name}</span>
                     <div class="cat-selector">
                         <button class="cat-btn ${state[i].type === 'PUBLICADOR' ? 'active-pub' : ''}" id="cat-pub-${i}" onclick="changeCat(${i},'PUBLICADOR')">PUB</button>
                         <button class="cat-btn ${state[i].type === 'AUXILIAR' ? 'active-aux' : ''}" id="cat-aux-${i}" onclick="changeCat(${i},'AUXILIAR')">AUX</button>
                         <button class="cat-btn ${state[i].type === 'REGULAR' ? 'active-reg' : ''}" id="cat-reg-${i}" onclick="changeCat(${i},'REGULAR')">REG</button>
                     </div>
-
                     <div class="grid">
                         <div class="group ${state[i].type !== 'PUBLICADOR' ? 'hidden' : ''}" id="p-box-${i}">
-                            <label>¿Participó?</label>
+                            <label>Participó</label>
                             <div class="selector">
                                 <button class="sel-btn ${state[i].participo === 'SI' ? 'active-si' : ''}" id="si-${i}" onclick="setSt(${i},'SI')">SÍ</button>
                                 <button class="sel-btn ${state[i].participo === 'NO' ? 'active-no' : ''}" id="no-${i}" onclick="setSt(${i},'NO')">NO</button>
                             </div>
                         </div>
                         <div class="group"><label>Estudios</label><input type="number" id="est-${i}" value="0"></div>
-                        <div class="group ${state[i].type === 'PUBLICADOR' ? 'hidden' : ''}" id="h-box-${i}">
-                            <label>Horas</label><input type="number" id="hrs-${i}" value="0">
-                        </div>
-                        <div class="group full"><label>Notas</label><textarea id="not-${i}" placeholder="Observaciones..."></textarea></div>
+                        <div class="group ${state[i].type === 'PUBLICADOR' ? 'hidden' : ''}" id="h-box-${i}"><label>Horas</label><input type="number" id="hrs-${i}" value="0"></div>
+                        <div class="group full"><label>Notas</label><textarea id="not-${i}" placeholder="Escriba aquí..."></textarea></div>
                     </div>`;
                 list.appendChild(card);
             });
@@ -350,15 +323,10 @@
         function changeCat(i, newType) {
             state[i].type = newType;
             if (newType !== 'PUBLICADOR') state[i].participo = 'SI';
-
-            // Actualizar UI sin re-renderizar todo
-            const card = document.getElementById(`c-${i}`);
-            updateCardStyle(card, i);
-
+            updateCardStyle(document.getElementById(`c-${i}`), i);
             document.getElementById(`cat-pub-${i}`).className = `cat-btn ${newType === 'PUBLICADOR' ? 'active-pub' : ''}`;
             document.getElementById(`cat-aux-${i}`).className = `cat-btn ${newType === 'AUXILIAR' ? 'active-aux' : ''}`;
             document.getElementById(`cat-reg-${i}`).className = `cat-btn ${newType === 'REGULAR' ? 'active-reg' : ''}`;
-
             document.getElementById(`p-box-${i}`).classList.toggle('hidden', newType !== 'PUBLICADOR');
             document.getElementById(`h-box-${i}`).classList.toggle('hidden', newType === 'PUBLICADOR');
         }
@@ -367,23 +335,18 @@
             state[i].participo = v;
             document.getElementById(`si-${i}`).className = `sel-btn ${v === 'SI' ? 'active-si' : ''}`;
             document.getElementById(`no-${i}`).className = `sel-btn ${v === 'NO' ? 'active-no' : ''}`;
-            const card = document.getElementById(`c-${i}`);
-            if (state[i].type === 'PUBLICADOR') card.className = `card status-${v.toLowerCase()}`;
+            if (state[i].type === 'PUBLICADOR') updateCardStyle(document.getElementById(`c-${i}`), i);
         }
 
         function send() {
             let msg = `📊 *INFORME G${g} - ${m.toUpperCase()}*\n\n`;
             publishers.forEach((p, i) => {
                 const est = document.getElementById(`est-${i}`).value || 0;
-                const nota = document.getElementById(`not-${i}`).value.trim();
-                msg += `👤 *${p.name.toUpperCase()}*\n`;
-                if (state[i].type === 'PUBLICADOR') {
-                    msg += `[PUBLICADOR] Participó: ${state[i].participo} | Est: ${est}`;
-                } else {
-                    const hrs = document.getElementById(`hrs-${i}`).value || 0;
-                    msg += `[${state[i].type}] Est: ${est} | Horas: ${hrs}`;
-                }
-                if (nota) msg += `\nNota: ${nota}`;
+                msg += `👤 *${p.name}* [${state[i].type.slice(0, 3)}]\n`;
+                if (state[i].type === 'PUBLICADOR') msg += `Part: ${state[i].participo} | Est: ${est}`;
+                else msg += `Est: ${est} | Hrs: ${document.getElementById(`hrs-${i}`).value || 0}`;
+                const n = document.getElementById(`not-${i}`).value.trim();
+                if (n) msg += `\nNota: ${n}`;
                 msg += `\n\n`;
             });
             window.location.href = `https://wa.me/${s}?text=${encodeURIComponent(msg)}`;
