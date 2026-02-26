@@ -406,6 +406,14 @@
 
         let isLocked = false;
 
+        function decodeToken(str) {
+            try {
+                let b64 = str.replace(/-/g, '+').replace(/_/g, '/');
+                while (b64.length % 4) b64 += '=';
+                return decodeURIComponent(escape(window.atob(b64)));
+            } catch (e) { return null; }
+        }
+
         function init() {
             // Clave de bloqueo específica
             isLocked = localStorage.getItem(CACHE_KEY + '_locked') === 'true';
