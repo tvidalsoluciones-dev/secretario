@@ -4,15 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <!-- METADATOS ESTÁNDAR PARA WHATSAPP -->
     <meta property="og:title" content="INFORME DE GRUPO 📊">
     <meta property="og:description" content="Toque aquí para completar el reporte mensual.">
     <meta property="og:image" content="https://tvidalsoluciones-dev.github.io/secretario/icon_informe_orion.png">
-    <meta property="og:image:width" content="300">
-    <meta property="og:image:height" content="300">
     <meta property="og:type" content="website">
-
     <title>ORION - Informe</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
@@ -48,17 +43,18 @@
             width: 100%;
             max-width: 500px;
             background: linear-gradient(135deg, var(--primary), var(--secondary));
-            padding: 40px 20px;
+            padding: 30px 20px;
             border-radius: 24px;
             color: white;
             text-align: center;
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-            margin-bottom: 30px;
+            margin-bottom: 25px;
         }
 
         .app-header h1 {
-            font-size: 1.6rem;
+            font-size: 1.5rem;
             font-weight: 700;
+            margin-bottom: 5px;
         }
 
         .container {
@@ -76,7 +72,7 @@
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             border: 1px solid #e2e8f0;
             border-left: 10px solid #cbd5e1;
-            transition: all 0.3s;
+            transition: 0.3s;
         }
 
         .card.cat-regular {
@@ -96,7 +92,7 @@
         }
 
         .name {
-            font-size: 1.2rem;
+            font-size: 1.25rem;
             font-weight: 700;
             color: var(--primary);
             text-transform: uppercase;
@@ -117,24 +113,25 @@
             flex: 1;
             border: none;
             background: transparent;
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             font-weight: 700;
             cursor: pointer;
             border-radius: 10px;
             color: #64748b;
+            transition: 0.2s;
         }
 
-        .cat-btn.active-pub {
+        .active-pub {
             background: #cbd5e1;
             color: var(--primary);
         }
 
-        .cat-btn.active-aux {
+        .active-aux {
             background: var(--warning);
             color: white;
         }
 
-        .cat-btn.active-reg {
+        .active-reg {
             background: var(--accent);
             color: white;
         }
@@ -178,14 +175,15 @@
             cursor: pointer;
             border-radius: 10px;
             color: #64748b;
+            transition: 0.2s;
         }
 
-        .sel-btn.active-si {
+        .active-si {
             background: var(--success);
             color: white;
         }
 
-        .sel-btn.active-no {
+        .active-no {
             background: var(--danger);
             color: white;
         }
@@ -204,11 +202,19 @@
             transition: 0.2s;
         }
 
+        input:focus,
+        textarea:focus {
+            background: #fff;
+            box-shadow: 0 0 0 2px var(--accent);
+        }
+
         textarea {
-            height: 75px;
+            height: 80px;
             text-align: left;
             padding: 12px;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
+            font-weight: 400;
+            line-height: 1.4;
         }
 
         .footer {
@@ -217,9 +223,8 @@
             left: 0;
             width: 100%;
             padding: 20px;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            z-index: 100;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(15px);
             border-top: 1px solid #e2e8f0;
         }
 
@@ -234,11 +239,8 @@
             border-radius: 18px;
             font-size: 1.1rem;
             font-weight: 700;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
             cursor: pointer;
+            box-shadow: 0 10px 15px -3px rgba(37, 211, 102, 0.3);
         }
 
         .hidden {
@@ -250,12 +252,10 @@
 <body>
     <header class="app-header">
         <h1 id="g-label">INFORME DE GRUPO</h1>
-        <p id="m-label">Cargando datos...</p>
+        <p id="m-label">Cargando...</p>
     </header>
     <main class="container" id="list"></main>
-    <div class="footer" id="f-box">
-        <button class="btn-send" onclick="send()"><span>ENVIAR POR WHATSAPP</span></button>
-    </div>
+    <div class="footer"><button class="btn-send" onclick="send()">ENVIAR POR WHATSAPP</button></div>
 
     <script>
         const params = new URLSearchParams(window.location.search);
@@ -273,23 +273,19 @@
                 let b64 = str.replace(/-/g, '+').replace(/_/g, '/');
                 while (b64.length % 4) b64 += '=';
                 return decodeURIComponent(escape(window.atob(b64)));
-            }
-            catch (e) { return null; }
+            } catch (e) { return null; }
         }
 
         if (token) {
             const raw = decodeToken(token);
             if (raw) {
-                const parts = raw.split('*');
-                for (let i = 0; i < parts.length; i += 2) {
-                    if (parts[i]) {
-                        const name = parts[i];
-                        const code = parts[i + 1] || "P";
-                        const type = CAT_CODES[code] || "PUBLICADOR";
-                        publishers.push({ name });
-                        state.push({ type, participo: (type !== 'PUBLICADOR' ? 'SI' : 'NO') });
+                raw.split('*').forEach((val, i, arr) => {
+                    if (i % 2 === 0 && val) {
+                        const type = CAT_CODES[arr[i + 1]] || "PUBLICADOR";
+                        publishers.push({ name: val });
+                        state.push({ type, participo: (type !== 'PUBLICADOR' ? 'SI' : 'NO'), est: 0, hrs: 0, not: "" });
                     }
-                }
+                });
                 render();
             }
         }
@@ -302,57 +298,73 @@
             publishers.forEach((p, i) => {
                 const card = document.createElement('div');
                 card.id = `c-${i}`;
-                updateCardStyle(card, i);
+                card.className = getCardClass(i);
                 card.innerHTML = `
                     <span class="name">${p.name}</span>
                     <div class="cat-selector">
-                        <button class="cat-btn ${state[i].type === 'PUBLICADOR' ? 'active-pub' : ''}" onclick="changeCat(${i},'PUBLICADOR')">PUB</button>
-                        <button class="cat-btn ${state[i].type === 'AUXILIAR' ? 'active-aux' : ''}" onclick="changeCat(${i},'AUXILIAR')">AUX</button>
-                        <button class="cat-btn ${state[i].type === 'REGULAR' ? 'active-reg' : ''}" onclick="changeCat(${i},'REGULAR')">REG</button>
+                        <button class="cat-btn ${state[i].type === 'PUBLICADOR' ? 'active-pub' : ''}" id="b-p-${i}" onclick="changeCat(${i},'PUBLICADOR')">PUB</button>
+                        <button class="cat-btn ${state[i].type === 'AUXILIAR' ? 'active-aux' : ''}" id="b-a-${i}" onclick="changeCat(${i},'AUXILIAR')">AUX</button>
+                        <button class="cat-btn ${state[i].type === 'REGULAR' ? 'active-reg' : ''}" id="b-r-${i}" onclick="changeCat(${i},'REGULAR')">REG</button>
                     </div>
                     <div class="grid">
                         <div class="group ${state[i].type !== 'PUBLICADOR' ? 'hidden' : ''}" id="p-box-${i}">
                             <label>Participó</label>
                             <div class="selector">
-                                <button class="sel-btn ${state[i].participo === 'SI' ? 'active-si' : ''}" id="si-${i}" onclick="setSt(${i},'SI')">SÍ</button>
-                                <button class="sel-btn ${state[i].participo === 'NO' ? 'active-no' : ''}" id="no-${i}" onclick="setSt(${i},'NO')">NO</button>
+                                <button class="sel-btn ${state[i].participo === 'SI' ? 'active-si' : ''}" id="s-si-${i}" onclick="setSt(${i},'SI')">SÍ</button>
+                                <button class="sel-btn ${state[i].participo === 'NO' ? 'active-no' : ''}" id="s-no-${i}" onclick="setSt(${i},'NO')">NO</button>
                             </div>
                         </div>
-                        <div class="group"><label>Estudios</label><input type="number" id="est-${i}" value="0"></div>
-                        <div class="group ${state[i].type === 'PUBLICADOR' ? 'hidden' : ''}" id="h-box-${i}"><label>Horas</label><input type="number" id="hrs-${i}" value="0"></div>
-                        <div class="group full"><label>Notas</label><textarea id="not-${i}" placeholder="Salud..."></textarea></div>
+                        <div class="group"><label>Estudios</label><input type="number" oninput="updateVal(${i},'est',this.value)" value="${state[i].est}"></div>
+                        <div class="group ${state[i].type === 'PUBLICADOR' ? 'hidden' : ''}" id="h-box-${i}">
+                            <label>Horas</label><input type="number" oninput="updateVal(${i},'hrs',this.value)" value="${state[i].hrs}">
+                        </div>
+                        <div class="group full"><label>Notas</label><textarea oninput="updateVal(${i},'not',this.value)" placeholder="Salud, etc...">${state[i].not}</textarea></div>
                     </div>`;
                 list.appendChild(card);
             });
         }
 
-        function updateCardStyle(card, i) {
+        function getCardClass(i) {
             const t = state[i].type;
-            if (t === 'REGULAR') card.className = 'card cat-regular';
-            else if (t === 'AUXILIAR') card.className = 'card cat-auxiliar';
-            else card.className = `card status-${state[i].participo.toLowerCase()}`;
+            if (t === 'REGULAR') return 'card cat-regular';
+            if (t === 'AUXILIAR') return 'card cat-auxiliar';
+            return `card status-${state[i].participo.toLowerCase()}`;
         }
+
+        function updateVal(i, key, val) { state[i][key] = val; }
 
         function changeCat(i, newType) {
             state[i].type = newType;
             if (newType !== 'PUBLICADOR') state[i].participo = 'SI';
-            render();
+
+            // Actualización granular de UI
+            const c = document.getElementById(`c-${i}`);
+            c.className = getCardClass(i);
+            document.getElementById(`b-p-${i}`).className = `cat-btn ${newType === 'PUBLICADOR' ? 'active-pub' : ''}`;
+            document.getElementById(`b-a-${i}`).className = `cat-btn ${newType === 'AUXILIAR' ? 'active-aux' : ''}`;
+            document.getElementById(`b-r-${i}`).className = `cat-btn ${newType === 'REGULAR' ? 'active-reg' : ''}`;
+            document.getElementById(`p-box-${i}`).classList.toggle('hidden', newType !== 'PUBLICADOR');
+            document.getElementById(`h-box-${i}`).classList.toggle('hidden', newType === 'PUBLICADOR');
+
+            // Actualizar botones SI/NO por si cambió a SI automático
+            document.getElementById(`s-si-${i}`).className = `sel-btn ${state[i].participo === 'SI' ? 'active-si' : ''}`;
+            document.getElementById(`s-no-${i}`).className = `sel-btn ${state[i].participo === 'NO' ? 'active-no' : ''}`;
         }
 
         function setSt(i, v) {
             state[i].participo = v;
-            render();
+            document.getElementById(`c-${i}`).className = getCardClass(i);
+            document.getElementById(`s-si-${i}`).className = `sel-btn ${v === 'SI' ? 'active-si' : ''}`;
+            document.getElementById(`s-no-${i}`).className = `sel-btn ${v === 'NO' ? 'active-no' : ''}`;
         }
 
         function send() {
             let msg = `📊 *INFORME G${g} - ${m.toUpperCase()}*\n\n`;
             publishers.forEach((p, i) => {
-                const est = document.getElementById(`est-${i}`).value || 0;
                 msg += `👤 *${p.name}* [${state[i].type.slice(0, 3)}]\n`;
-                if (state[i].type === 'PUBLICADOR') msg += `Part: ${state[i].participo} | Est: ${est}`;
-                else msg += `Est: ${est} | Hrs: ${document.getElementById(`hrs-${i}`).value || 0}`;
-                const n = document.getElementById(`not-${i}`).value.trim();
-                if (n) msg += `\nNota: ${n}`;
+                if (state[i].type === 'PUBLICADOR') msg += `Part: ${state[i].participo} | Est: ${state[i].est}`;
+                else msg += `Est: ${state[i].est} | Hrs: ${state[i].hrs}`;
+                if (state[i].not) msg += `\nNota: ${state[i].not}`;
                 msg += `\n\n`;
             });
             window.location.href = `https://wa.me/${s}?text=${encodeURIComponent(msg)}`;
