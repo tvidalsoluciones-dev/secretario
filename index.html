@@ -391,22 +391,14 @@
     </div>
 
     <script>
-        // Variables globales y captura robusta de parámetros
-        const params = new URLSearchParams(window.location.search);
-
+        // Variables globales y captura ultra-robusta de parámetros
         function getParam(name) {
-            const lowName = name.toLowerCase();
-            for (let [key, value] of params.entries()) {
-                if (key.toLowerCase() === lowName) return value;
-            }
-            // Fallback manual por si URLSearchParams falla en algún móvil
-            const search = window.location.search.substring(1);
-            const pairs = search.split('&');
-            for (const pair of pairs) {
-                const [k, v] = pair.split('=');
-                if (k && k.toLowerCase() === lowName) return decodeURIComponent(v);
-            }
-            return "";
+            name = name.replace(/[\[\]]/g, '\\$&');
+            const regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)', 'i');
+            const results = regex.exec(window.location.href);
+            if (!results) return "";
+            if (!results[2]) return "";
+            return decodeURIComponent(results[2].replace(/\+/g, ' '));
         }
 
         let g = getParam('g');
@@ -454,7 +446,8 @@
             }
 
             const tokenHash = getHash(token);
-            CACHE_KEY = `or_v3_${tokenHash}`;
+            const monthSuffix = m ? `_${m.toUpperCase().replace(/\s/g, '_')}` : "";
+            CACHE_KEY = `or_v4${monthSuffix}_${tokenHash}`;
 
             isLocked = localStorage.getItem(CACHE_KEY + '_locked') === 'true';
             const saved = localStorage.getItem(CACHE_KEY);
