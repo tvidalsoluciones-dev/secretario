@@ -397,15 +397,6 @@
         const token = params.get('t') || "";
         const s = params.get('s') || "";
 
-        // Clave única para persistencia
-        const CACHE_KEY = `orion_v2_${g}_${m.replace(/\s/g, '_')}`;
-
-        const CAT_CODES = { "P": "PUBLICADOR", "A": "AUXILIAR", "R": "REGULAR" };
-        let publishers = [];
-        let state = [];
-
-        let isLocked = false;
-
         function decodeToken(str) {
             try {
                 let b64 = str.replace(/-/g, '+').replace(/_/g, '/');
@@ -414,43 +405,67 @@
             } catch (e) { return null; }
         }
 
-        function init() {
-            // Clave de bloqueo específica
-            isLocked = localStorage.getItem(CACHE_KEY + '_locked') === 'true';
+        function getHash(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                const char = str.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+            return Math.abs(hash).toString(36);
+        }
 
+        const CAT_CODES = { "P": "PUBLICADOR", "A": "AUXILIAR", "R": "REGULAR" };
+        let publishers = [];
+        let state = [];
+        let isLocked = false;
+        let CACHE_KEY = "";
+
+        function init() {
+            if (!token) {
+                document.getElementById('m-label').innerText = "⚠️ Enlace sin datos";
+                return;
+            }
+
+            const tokenHash = getHash(token);
+            CACHE_KEY = `or_v3_${tokenHash}`;
+
+            isLocked = localStorage.getItem(CACHE_KEY + '_locked') === 'true';
             const saved = localStorage.getItem(CACHE_KEY);
 
-            if (token) {
-                const raw = decodeToken(token);
-                if (raw) {
-                    const decodedItems = [];
-                    raw.split('*').forEach((val, i, arr) => {
-                        if (i % 2 === 0 && val) {
-                            decodedItems.push({
-                                name: val,
-                                type: CAT_CODES[arr[i + 1]] || "PUBLICADOR"
-                            });
-                        }
+            const raw = decodeToken(token);
+            if (!raw) {
+                document.getElementById('m-label').innerText = "⚠️ Enlace dañado";
+                return;
+            }
+
+            const decodedItems = [];
+            raw.split('*').forEach((val, i, arr) => {
+                if (i % 2 === 0 && val) {
+                    decodedItems.push({
+                        name: val,
+                        type: CAT_CODES[arr[i + 1]] || "PUBLICADOR"
                     });
+                }
+            });
 
-                    publishers = decodedItems;
+            publishers = decodedItems;
 
-                    if (saved) {
-                        try {
-                            const parsed = JSON.parse(saved);
-                            if (parsed.length === decodedItems.length) {
-                                state = parsed;
-                            } else {
-                                state = decodedItems.map(d => resetMember(d.type));
-                            }
-                        } catch (e) {
-                            state = decodedItems.map(d => resetMember(d.type));
-                        }
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    if (parsed.length === decodedItems.length) {
+                        state = parsed;
                     } else {
                         state = decodedItems.map(d => resetMember(d.type));
                     }
+                } catch (e) {
+                    state = decodedItems.map(d => resetMember(d.type));
                 }
+            } else {
+                state = decodedItems.map(d => resetMember(d.type));
             }
+
             render();
             updateSummary();
         }
