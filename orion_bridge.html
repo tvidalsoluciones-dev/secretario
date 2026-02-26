@@ -14,6 +14,7 @@
             --success: #10b981;
             --danger: #ef4444;
             --bg: #f8fafc;
+            --warning: #f59e0b;
         }
 
         * {
@@ -81,7 +82,7 @@
         }
 
         .card.cat-auxiliar {
-            border-left-color: #f59e0b;
+            border-left-color: var(--warning);
         }
 
         .card.status-si {
@@ -106,22 +107,41 @@
             text-transform: uppercase;
         }
 
-        .badge {
-            font-size: 0.7rem;
-            font-weight: 700;
+        /* Category Selector */
+        .cat-selector {
+            display: flex;
             background: #f1f5f9;
-            color: #64748b;
-            padding: 4px 12px;
-            border-radius: 100px;
+            padding: 4px;
+            border-radius: 14px;
+            height: 40px;
+            margin-bottom: 20px;
         }
 
-        .badge.active-reg {
-            background: var(--accent);
+        .cat-btn {
+            flex: 1;
+            border: none;
+            background: transparent;
+            font-size: 0.7rem;
+            font-weight: 700;
+            cursor: pointer;
+            border-radius: 10px;
+            color: #64748b;
+            text-transform: uppercase;
+            transition: 0.2s;
+        }
+
+        .cat-btn.active-pub {
+            background: #cbd5e1;
+            color: var(--primary);
+        }
+
+        .cat-btn.active-aux {
+            background: var(--warning);
             color: white;
         }
 
-        .badge.active-aux {
-            background: #f59e0b;
+        .cat-btn.active-reg {
+            background: var(--accent);
             color: white;
         }
 
@@ -187,6 +207,12 @@
             font-weight: 600;
             outline: none;
             width: 100%;
+            transition: 0.2s;
+        }
+
+        input:focus {
+            background: white;
+            box-shadow: 0 0 0 2px #cbd5e1;
         }
 
         textarea {
@@ -195,62 +221,6 @@
             padding: 12px;
             font-size: 0.9rem;
             font-weight: 400;
-        }
-
-        .config-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: #f8fafc;
-            padding: 12px 16px;
-            border-radius: 14px;
-            margin-bottom: 18px;
-            border: 1px dashed #cbd5e1;
-        }
-
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 44px;
-            height: 24px;
-        }
-
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #cbd5e1;
-            transition: .4s;
-            border-radius: 24px;
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 18px;
-            width: 18px;
-            left: 3px;
-            bottom: 3px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-        }
-
-        input:checked+.slider {
-            background-color: var(--accent);
-        }
-
-        input:checked+.slider:before {
-            transform: translateX(20px);
         }
 
         .footer {
@@ -281,6 +251,7 @@
             justify-content: center;
             gap: 10px;
             cursor: pointer;
+            box-shadow: 0 10px 15px -3px rgba(37, 211, 102, 0.3);
         }
 
         .hidden {
@@ -337,43 +308,67 @@
             document.getElementById('m-label').innerText = `Mes de ${m}`;
             list.innerHTML = '';
             publishers.forEach((p, i) => {
-                const isPre = (state[i].type === 'REGULAR' || state[i].type === 'AUXILIAR');
                 const card = document.createElement('div');
                 card.id = `c-${i}`;
-                card.className = `card cat-${state[i].type.toLowerCase()}`;
-                if (state[i].type === 'PUBLICADOR') card.className = `card status-${state[i].participo.toLowerCase()}`;
+                updateCardStyle(card, i);
 
                 card.innerHTML = `
-                    <div class="card-header"><span class="name">${p.name}</span><span class="badge ${state[i].type === 'REGULAR' ? 'active-reg' : (state[i].type === 'AUXILIAR' ? 'active-aux' : '')}" id="b-${i}">${state[i].type}</span></div>
-                    <div class="config-row ${state[i].type === 'REGULAR' ? 'hidden' : ''}"><span>SESIÓN DE AUXILIAR ESTE MES</span><label class="switch"><input type="checkbox" id="sw-${i}" ${state[i].type === 'AUXILIAR' ? 'checked' : ''} onchange="toggleCat(${i})"><span class="slider"></span></label></div>
+                    <div class="card-header"><span class="name">${p.name}</span></div>
+                    
+                    <label>Categoría este mes</label>
+                    <div class="cat-selector">
+                        <button class="cat-btn ${state[i].type === 'PUBLICADOR' ? 'active-pub' : ''}" id="cat-pub-${i}" onclick="changeCat(${i},'PUBLICADOR')">PUB</button>
+                        <button class="cat-btn ${state[i].type === 'AUXILIAR' ? 'active-aux' : ''}" id="cat-aux-${i}" onclick="changeCat(${i},'AUXILIAR')">AUX</button>
+                        <button class="cat-btn ${state[i].type === 'REGULAR' ? 'active-reg' : ''}" id="cat-reg-${i}" onclick="changeCat(${i},'REGULAR')">REG</button>
+                    </div>
+
                     <div class="grid">
-                        <div class="group ${isPre ? 'hidden' : ''}" id="p-box-${i}"><label>¿Participó?</label><div class="selector"><button class="sel-btn ${state[i].participo === 'SI' ? 'active-si' : ''}" id="si-${i}" onclick="setSt(${i},'SI')">SÍ</button><button class="sel-btn ${state[i].participo === 'NO' ? 'active-no' : ''}" id="no-${i}" onclick="setSt(${i},'NO')">NO</button></div></div>
+                        <div class="group ${state[i].type !== 'PUBLICADOR' ? 'hidden' : ''}" id="p-box-${i}">
+                            <label>¿Participó?</label>
+                            <div class="selector">
+                                <button class="sel-btn ${state[i].participo === 'SI' ? 'active-si' : ''}" id="si-${i}" onclick="setSt(${i},'SI')">SÍ</button>
+                                <button class="sel-btn ${state[i].participo === 'NO' ? 'active-no' : ''}" id="no-${i}" onclick="setSt(${i},'NO')">NO</button>
+                            </div>
+                        </div>
                         <div class="group"><label>Estudios</label><input type="number" id="est-${i}" value="0"></div>
-                        <div class="group ${isPre ? '' : 'hidden'}" id="h-box-${i}"><label>Horas</label><input type="number" id="hrs-${i}" value="0"></div>
+                        <div class="group ${state[i].type === 'PUBLICADOR' ? 'hidden' : ''}" id="h-box-${i}">
+                            <label>Horas</label><input type="number" id="hrs-${i}" value="0">
+                        </div>
                         <div class="group full"><label>Notas</label><textarea id="not-${i}" placeholder="Observaciones..."></textarea></div>
                     </div>`;
                 list.appendChild(card);
             });
         }
 
-        function toggleCat(i) {
-            const isChecked = document.getElementById(`sw-${i}`).checked;
-            state[i].type = isChecked ? 'AUXILIAR' : 'PUBLICADOR';
-            const isPre = (state[i].type === 'AUXILIAR');
-            document.getElementById(`p-box-${i}`).classList.toggle('hidden', isPre);
-            document.getElementById(`h-box-${i}`).classList.toggle('hidden', !isPre);
-            const b = document.getElementById(`b-${i}`);
-            b.innerText = state[i].type; b.className = `badge ${isChecked ? 'active-aux' : ''}`;
-            const c = document.getElementById(`c-${i}`);
-            if (isChecked) { c.className = "card cat-auxiliar"; state[i].participo = 'SI'; }
-            else { c.className = `card status-${state[i].participo.toLowerCase()}`; }
+        function updateCardStyle(card, i) {
+            const t = state[i].type;
+            if (t === 'REGULAR') card.className = 'card cat-regular';
+            else if (t === 'AUXILIAR') card.className = 'card cat-auxiliar';
+            else card.className = `card status-${state[i].participo.toLowerCase()}`;
+        }
+
+        function changeCat(i, newType) {
+            state[i].type = newType;
+            if (newType !== 'PUBLICADOR') state[i].participo = 'SI';
+
+            // Actualizar UI sin re-renderizar todo
+            const card = document.getElementById(`c-${i}`);
+            updateCardStyle(card, i);
+
+            document.getElementById(`cat-pub-${i}`).className = `cat-btn ${newType === 'PUBLICADOR' ? 'active-pub' : ''}`;
+            document.getElementById(`cat-aux-${i}`).className = `cat-btn ${newType === 'AUXILIAR' ? 'active-aux' : ''}`;
+            document.getElementById(`cat-reg-${i}`).className = `cat-btn ${newType === 'REGULAR' ? 'active-reg' : ''}`;
+
+            document.getElementById(`p-box-${i}`).classList.toggle('hidden', newType !== 'PUBLICADOR');
+            document.getElementById(`h-box-${i}`).classList.toggle('hidden', newType === 'PUBLICADOR');
         }
 
         function setSt(i, v) {
             state[i].participo = v;
             document.getElementById(`si-${i}`).className = `sel-btn ${v === 'SI' ? 'active-si' : ''}`;
             document.getElementById(`no-${i}`).className = `sel-btn ${v === 'NO' ? 'active-no' : ''}`;
-            document.getElementById(`c-${i}`).className = `card status-${v.toLowerCase()}`;
+            const card = document.getElementById(`c-${i}`);
+            if (state[i].type === 'PUBLICADOR') card.className = `card status-${v.toLowerCase()}`;
         }
 
         function send() {
@@ -382,8 +377,12 @@
                 const est = document.getElementById(`est-${i}`).value || 0;
                 const nota = document.getElementById(`not-${i}`).value.trim();
                 msg += `👤 *${p.name.toUpperCase()}*\n`;
-                if (state[i].type === 'PUBLICADOR') { msg += `[PUBLICADOR] Participó: ${state[i].participo} | Est: ${est}`; }
-                else { msg += `[${state[i].type}] Est: ${est} | Horas: ${document.getElementById(`hrs-${i}`).value || 0}`; }
+                if (state[i].type === 'PUBLICADOR') {
+                    msg += `[PUBLICADOR] Participó: ${state[i].participo} | Est: ${est}`;
+                } else {
+                    const hrs = document.getElementById(`hrs-${i}`).value || 0;
+                    msg += `[${state[i].type}] Est: ${est} | Horas: ${hrs}`;
+                }
                 if (nota) msg += `\nNota: ${nota}`;
                 msg += `\n\n`;
             });
