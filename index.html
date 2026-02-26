@@ -19,6 +19,7 @@
             --danger: #ef4444;
             --bg: #f8fafc;
             --warning: #f59e0b;
+            --text-muted: #64748b;
         }
 
         * {
@@ -36,7 +37,8 @@
             flex-direction: column;
             align-items: center;
             min-height: 100vh;
-            padding: 20px 15px 120px 15px;
+            padding: 20px 15px 180px 15px;
+            /* Más espacio inferior para el resumen */
         }
 
         .app-header {
@@ -72,7 +74,9 @@
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             border: 1px solid #e2e8f0;
             border-left: 10px solid #cbd5e1;
+            /* Gris por defecto (pendiente) */
             transition: 0.3s;
+            position: relative;
         }
 
         .card.cat-regular {
@@ -91,13 +95,33 @@
             border-left-color: var(--danger);
         }
 
+        /* Estado Pendiente */
+        .card.pending {
+            border-left-color: #cbd5e1;
+            background: #fdfdfd;
+        }
+
+        .card.pending::after {
+            content: 'PENDIENTE';
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            font-size: 0.6rem;
+            font-weight: 800;
+            color: var(--text-muted);
+            background: #f1f5f9;
+            padding: 2px 8px;
+            border-radius: 6px;
+        }
+
         .name {
-            font-size: 1.25rem;
+            font-size: 1.1rem;
             font-weight: 700;
             color: var(--primary);
             text-transform: uppercase;
             margin-bottom: 15px;
             display: block;
+            max-width: 80%;
         }
 
         .cat-selector {
@@ -117,7 +141,7 @@
             font-weight: 700;
             cursor: pointer;
             border-radius: 10px;
-            color: #64748b;
+            color: var(--text-muted);
             transition: 0.2s;
         }
 
@@ -155,7 +179,7 @@
         label {
             font-size: 0.7rem;
             font-weight: 700;
-            color: #64748b;
+            color: var(--text-muted);
             text-transform: uppercase;
         }
 
@@ -174,7 +198,7 @@
             font-weight: 700;
             cursor: pointer;
             border-radius: 10px;
-            color: #64748b;
+            color: var(--text-muted);
             transition: 0.2s;
         }
 
@@ -191,7 +215,7 @@
         input,
         textarea {
             background: #f1f5f9;
-            border: none;
+            border: 2px solid transparent;
             border-radius: 12px;
             height: 50px;
             text-align: center;
@@ -205,7 +229,7 @@
         input:focus,
         textarea:focus {
             background: #fff;
-            box-shadow: 0 0 0 2px var(--accent);
+            border-color: var(--accent);
         }
 
         textarea {
@@ -217,21 +241,62 @@
             line-height: 1.4;
         }
 
+        /* Validación visual */
+        .invalid {
+            border-color: var(--danger) !important;
+            background: #fffafa;
+        }
+
         .footer {
             position: fixed;
             bottom: 0;
             left: 0;
             width: 100%;
-            padding: 20px;
-            background: rgba(255, 255, 255, 0.9);
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(15px);
             border-top: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            z-index: 1000;
+        }
+
+        .summary-bar {
+            width: 100%;
+            max-width: 460px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 5px;
+        }
+
+        .stat {
+            background: #f8fafc;
+            padding: 8px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+        }
+
+        .stat-val {
+            display: block;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            font-size: 0.6rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
         }
 
         .btn-send {
             width: 100%;
             max-width: 460px;
-            margin: 0 auto;
             height: 60px;
             background: #25d366;
             color: white;
@@ -241,6 +306,35 @@
             font-weight: 700;
             cursor: pointer;
             box-shadow: 0 10px 15px -3px rgba(37, 211, 102, 0.3);
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-send:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+            box-shadow: none;
+            opacity: 0.7;
+        }
+
+        .progress-container {
+            width: 100%;
+            max-width: 460px;
+            background: #f1f5f9;
+            height: 6px;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 5px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--accent);
+            width: 0%;
+            transition: 0.5s width ease;
         }
 
         .hidden {
@@ -254,8 +348,25 @@
         <h1 id="g-label">INFORME DE GRUPO</h1>
         <p id="m-label">Cargando...</p>
     </header>
+
     <main class="container" id="list"></main>
-    <div class="footer"><button class="btn-send" onclick="send()">ENVIAR POR WHATSAPP</button></div>
+
+    <div class="footer">
+        <div class="progress-container">
+            <div id="prog" class="progress-bar"></div>
+        </div>
+
+        <div class="summary-bar">
+            <div class="stat"><span class="stat-val" id="tot-p">0</span><span class="stat-label">Infs</span></div>
+            <div class="stat"><span class="stat-val" id="tot-h">0</span><span class="stat-label">Horas</span></div>
+            <div class="stat"><span class="stat-val" id="tot-e">0</span><span class="stat-label">Ests</span></div>
+        </div>
+
+        <button class="btn-send" id="btn-wa" onclick="send()" disabled>
+            ENVIAR POR WHATSAPP
+        </button>
+        <p style="font-size: 0.7rem; color: #94a3b8; font-weight: 500;" id="status-text">Complete todos los reportes</p>
+    </div>
 
     <script>
         const params = new URLSearchParams(window.location.search);
@@ -264,8 +375,11 @@
         const token = params.get('t') || "";
         const s = params.get('s') || "";
 
+        // Clave única para persistencia
+        const CACHE_KEY = `orion_v2_${g}_${m.replace(/\s/g, '_')}`;
+
         const CAT_CODES = { "P": "PUBLICADOR", "A": "AUXILIAR", "R": "REGULAR" };
-        const publishers = [];
+        let publishers = [];
         let state = [];
 
         function decodeToken(str) {
@@ -276,18 +390,111 @@
             } catch (e) { return null; }
         }
 
-        if (token) {
-            const raw = decodeToken(token);
-            if (raw) {
-                raw.split('*').forEach((val, i, arr) => {
-                    if (i % 2 === 0 && val) {
-                        const type = CAT_CODES[arr[i + 1]] || "PUBLICADOR";
-                        publishers.push({ name: val });
-                        state.push({ type, participo: (type !== 'PUBLICADOR' ? 'SI' : 'NO'), est: 0, hrs: 0, not: "" });
+        function init() {
+            // Intentar cargar de cache
+            const saved = localStorage.getItem(CACHE_KEY);
+
+            if (token) {
+                const raw = decodeToken(token);
+                if (raw) {
+                    const decodedItems = [];
+                    raw.split('*').forEach((val, i, arr) => {
+                        if (i % 2 === 0 && val) {
+                            decodedItems.push({
+                                name: val,
+                                type: CAT_CODES[arr[i + 1]] || "PUBLICADOR"
+                            });
+                        }
+                    });
+
+                    publishers = decodedItems;
+
+                    if (saved) {
+                        try {
+                            const parsed = JSON.parse(saved);
+                            // Validar que la cantidad de miembros coincida con el token
+                            if (parsed.length === decodedItems.length) {
+                                state = parsed;
+                            } else {
+                                state = decodedItems.map(d => resetMember(d.type));
+                            }
+                        } catch (e) {
+                            state = decodedItems.map(d => resetMember(d.type));
+                        }
+                    } else {
+                        state = decodedItems.map(d => resetMember(d.type));
                     }
-                });
-                render();
+                }
             }
+            render();
+            updateSummary();
+        }
+
+        function resetMember(type) {
+            return {
+                type: type,
+                participo: (type !== 'PUBLICADOR' ? 'SI' : null), // null significa pendiente para PUB
+                est: 0,
+                hrs: (type === 'PUBLICADOR' ? 0 : ''), // String vacío para forzar ingreso de horas en precursores
+                not: "",
+                checked: (type !== 'PUBLICADOR') // Precursores asumen participación inicial pero deben ajustar horas
+            };
+        }
+
+        function save() {
+            localStorage.setItem(CACHE_KEY, JSON.stringify(state));
+            updateSummary();
+        }
+
+        function updateSummary() {
+            let totalInfs = 0;
+            let totalHrs = 0;
+            let totalEsts = 0;
+            let completed = 0;
+
+            state.forEach(m => {
+                if (m.participo !== null) {
+                    completed++;
+                    if (m.participo === 'SI') {
+                        totalInfs++;
+                        totalHrs += (parseInt(m.hrs) || 0);
+                        totalEsts += (parseInt(m.est) || 0);
+                    }
+                }
+            });
+
+            document.getElementById('tot-p').innerText = totalInfs;
+            document.getElementById('tot-h').innerText = totalHrs;
+            document.getElementById('tot-e').innerText = totalEsts;
+
+            const progress = (completed / state.length) * 100;
+            document.getElementById('prog').style.width = `${progress}%`;
+
+            const isReady = completed === state.length && validateAll();
+            const btn = document.getElementById('btn-wa');
+            btn.disabled = !isReady;
+
+            const statusText = document.getElementById('status-text');
+            if (completed < state.length) {
+                statusText.innerText = `Pendientes: ${state.length - completed} reportes`;
+                statusText.style.color = "#94a3b8";
+            } else if (!validateAll()) {
+                statusText.innerText = "⚠️ Revise las horas de los precursores";
+                statusText.style.color = "var(--danger)";
+            } else {
+                statusText.innerText = "✅ Todo listo para enviar";
+                statusText.style.color = "var(--success)";
+            }
+        }
+
+        function validateAll() {
+            // Un precursor que participa DEBE tener horas (al menos 1)
+            return state.every(m => {
+                if (m.type !== 'PUBLICADOR' && m.participo === 'SI') {
+                    return (parseInt(m.hrs) > 0);
+                }
+                return true;
+            });
         }
 
         function render() {
@@ -295,80 +502,105 @@
             document.getElementById('m-label').innerText = `Mes de ${m}`;
             const list = document.getElementById('list');
             list.innerHTML = '';
+
             publishers.forEach((p, i) => {
                 const card = document.createElement('div');
                 card.id = `c-${i}`;
                 card.className = getCardClass(i);
+
+                const isPending = state[i].participo === null;
+                const hoursClass = (state[i].type !== 'PUBLICADOR' && state[i].participo === 'SI' && (parseInt(state[i].hrs) || 0) === 0) ? 'invalid' : '';
+
                 card.innerHTML = `
                     <span class="name">${p.name}</span>
                     <div class="cat-selector">
-                        <button class="cat-btn ${state[i].type === 'PUBLICADOR' ? 'active-pub' : ''}" id="b-p-${i}" onclick="changeCat(${i},'PUBLICADOR')">PUB</button>
-                        <button class="cat-btn ${state[i].type === 'AUXILIAR' ? 'active-aux' : ''}" id="b-a-${i}" onclick="changeCat(${i},'AUXILIAR')">AUX</button>
-                        <button class="cat-btn ${state[i].type === 'REGULAR' ? 'active-reg' : ''}" id="b-r-${i}" onclick="changeCat(${i},'REGULAR')">REG</button>
+                        <button class="cat-btn ${state[i].type === 'PUBLICADOR' ? 'active-pub' : ''}" onclick="changeCat(${i},'PUBLICADOR')">PUB</button>
+                        <button class="cat-btn ${state[i].type === 'AUXILIAR' ? 'active-aux' : ''}" onclick="changeCat(${i},'AUXILIAR')">AUX</button>
+                        <button class="cat-btn ${state[i].type === 'REGULAR' ? 'active-reg' : ''}" onclick="changeCat(${i},'REGULAR')">REG</button>
                     </div>
                     <div class="grid">
                         <div class="group ${state[i].type !== 'PUBLICADOR' ? 'hidden' : ''}" id="p-box-${i}">
                             <label>Participó</label>
                             <div class="selector">
-                                <button class="sel-btn ${state[i].participo === 'SI' ? 'active-si' : ''}" id="s-si-${i}" onclick="setSt(${i},'SI')">SÍ</button>
-                                <button class="sel-btn ${state[i].participo === 'NO' ? 'active-no' : ''}" id="s-no-${i}" onclick="setSt(${i},'NO')">NO</button>
+                                <button class="sel-btn ${state[i].participo === 'SI' ? 'active-si' : ''}" onclick="setSt(${i},'SI')">SÍ</button>
+                                <button class="sel-btn ${state[i].participo === 'NO' ? 'active-no' : ''}" onclick="setSt(${i},'NO')">NO</button>
                             </div>
                         </div>
-                        <div class="group"><label>Estudios</label><input type="number" oninput="updateVal(${i},'est',this.value)" value="${state[i].est}"></div>
-                        <div class="group ${state[i].type === 'PUBLICADOR' ? 'hidden' : ''}" id="h-box-${i}">
-                            <label>Horas</label><input type="number" oninput="updateVal(${i},'hrs',this.value)" value="${state[i].hrs}">
+                        <div class="group">
+                            <label>Estudios</label>
+                            <input type="number" oninput="updateVal(${i},'est',this.value)" value="${state[i].est}">
                         </div>
-                        <div class="group full"><label>Notas</label><textarea oninput="updateVal(${i},'not',this.value)" placeholder="Salud, etc...">${state[i].not}</textarea></div>
+                        <div class="group ${state[i].type === 'PUBLICADOR' ? 'hidden' : ''}" id="h-box-${i}">
+                            <label>Horas</label>
+                            <input type="number" class="${hoursClass}" placeholder="0" oninput="updateVal(${i},'hrs',this.value)" value="${state[i].hrs}">
+                        </div>
+                        <div class="group full">
+                            <label>Notas</label>
+                            <textarea oninput="updateVal(${i},'not',this.value)" placeholder="Salud, etc...">${state[i].not}</textarea>
+                        </div>
                     </div>`;
                 list.appendChild(card);
             });
         }
 
         function getCardClass(i) {
+            if (state[i].participo === null) return 'card pending';
             const t = state[i].type;
             if (t === 'REGULAR') return 'card cat-regular';
             if (t === 'AUXILIAR') return 'card cat-auxiliar';
             return `card status-${state[i].participo.toLowerCase()}`;
         }
 
-        function updateVal(i, key, val) { state[i][key] = val; }
+        function updateVal(i, key, val) {
+            state[i][key] = val;
+            if (key === 'hrs') {
+                const card = document.getElementById(`c-${i}`);
+                const input = card.querySelector('#h-box-' + i + ' input');
+                if (state[i].type !== 'PUBLICADOR' && state[i].participo === 'SI' && (parseInt(val) || 0) === 0) {
+                    input.classList.add('invalid');
+                } else {
+                    input.classList.remove('invalid');
+                }
+            }
+            save();
+        }
 
         function changeCat(i, newType) {
             state[i].type = newType;
-            if (newType !== 'PUBLICADOR') state[i].participo = 'SI';
-
-            // Actualización granular de UI
-            const c = document.getElementById(`c-${i}`);
-            c.className = getCardClass(i);
-            document.getElementById(`b-p-${i}`).className = `cat-btn ${newType === 'PUBLICADOR' ? 'active-pub' : ''}`;
-            document.getElementById(`b-a-${i}`).className = `cat-btn ${newType === 'AUXILIAR' ? 'active-aux' : ''}`;
-            document.getElementById(`b-r-${i}`).className = `cat-btn ${newType === 'REGULAR' ? 'active-reg' : ''}`;
-            document.getElementById(`p-box-${i}`).classList.toggle('hidden', newType !== 'PUBLICADOR');
-            document.getElementById(`h-box-${i}`).classList.toggle('hidden', newType === 'PUBLICADOR');
-
-            // Actualizar botones SI/NO por si cambió a SI automático
-            document.getElementById(`s-si-${i}`).className = `sel-btn ${state[i].participo === 'SI' ? 'active-si' : ''}`;
-            document.getElementById(`s-no-${i}`).className = `sel-btn ${state[i].participo === 'NO' ? 'active-no' : ''}`;
+            if (newType !== 'PUBLICADOR') {
+                state[i].participo = 'SI';
+                if (state[i].hrs === 0) state[i].hrs = '';
+            } else {
+                state[i].hrs = 0;
+            }
+            render();
+            save();
         }
 
         function setSt(i, v) {
             state[i].participo = v;
-            document.getElementById(`c-${i}`).className = getCardClass(i);
-            document.getElementById(`s-si-${i}`).className = `sel-btn ${v === 'SI' ? 'active-si' : ''}`;
-            document.getElementById(`s-no-${i}`).className = `sel-btn ${v === 'NO' ? 'active-no' : ''}`;
+            render();
+            save();
         }
 
         function send() {
+            if (!validateAll()) return;
+
             let msg = `📊 *INFORME G${g} - ${m.toUpperCase()}*\n\n`;
             publishers.forEach((p, i) => {
                 msg += `👤 *${p.name}* [${state[i].type.slice(0, 3)}]\n`;
-                if (state[i].type === 'PUBLICADOR') msg += `Part: ${state[i].participo} | Est: ${state[i].est}`;
-                else msg += `Est: ${state[i].est} | Hrs: ${state[i].hrs}`;
+                if (state[i].type === 'PUBLICADOR') {
+                    msg += `Part: ${state[i].participo} | Est: ${state[i].est}`;
+                } else {
+                    msg += `Est: ${state[i].est} | Hrs: ${state[i].hrs || 0}`;
+                }
                 if (state[i].not) msg += `\nNota: ${state[i].not}`;
                 msg += `\n\n`;
             });
             window.location.href = `https://wa.me/${s}?text=${encodeURIComponent(msg)}`;
         }
+
+        init();
     </script>
 </body>
 
