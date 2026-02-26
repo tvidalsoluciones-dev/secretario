@@ -359,8 +359,16 @@
 
 <body>
     <header class="app-header">
-        <h1 id="g-label">INFORME DE GRUPO</h1>
-        <p id="m-label">Cargando...</p>
+        <div style="display: flex; justify-content: space-between; align-items: start; width: 100%;">
+            <div style="text-align: left;">
+                <h1 id="g-label">INFORME DE GRUPO</h1>
+                <p id="m-label">Cargando...</p>
+            </div>
+            <button id="btn-unlock" class="hidden" onclick="unlock()"
+                style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 10px; border-radius: 12px; cursor: pointer; font-size: 0.7rem; font-weight: 700;">
+                🔓 EDITAR
+            </button>
+        </div>
     </header>
 
     <main class="container" id="list"></main>
@@ -396,16 +404,12 @@
         let publishers = [];
         let state = [];
 
-        function decodeToken(str) {
-            try {
-                let b64 = str.replace(/-/g, '+').replace(/_/g, '/');
-                while (b64.length % 4) b64 += '=';
-                return decodeURIComponent(escape(window.atob(b64)));
-            } catch (e) { return null; }
-        }
+        let isLocked = false;
 
         function init() {
-            // Intentar cargar de cache
+            // Clave de bloqueo específica
+            isLocked = localStorage.getItem(CACHE_KEY + '_locked') === 'true';
+
             const saved = localStorage.getItem(CACHE_KEY);
 
             if (token) {
@@ -426,7 +430,6 @@
                     if (saved) {
                         try {
                             const parsed = JSON.parse(saved);
-                            // Validar que la cantidad de miembros coincida con el token
                             if (parsed.length === decodedItems.length) {
                                 state = parsed;
                             } else {
@@ -447,15 +450,16 @@
         function resetMember(type) {
             return {
                 type: type,
-                participo: (type !== 'PUBLICADOR' ? 'SI' : null), // null significa pendiente para PUB
+                participo: (type !== 'PUBLICADOR' ? 'SI' : null),
                 est: 0,
-                hrs: (type === 'PUBLICADOR' ? 0 : ''), // String vacío para forzar ingreso de horas en precursores
+                hrs: (type === 'PUBLICADOR' ? 0 : ''),
                 not: "",
-                checked: (type !== 'PUBLICADOR') // Precursores asumen participación inicial pero deben ajustar horas
+                checked: (type !== 'PUBLICADOR')
             };
         }
 
         function save() {
+            if (isLocked) return;
             localStorage.setItem(CACHE_KEY, JSON.stringify(state));
             updateSummary();
         }
@@ -484,11 +488,27 @@
             const progress = (completed / state.length) * 100;
             document.getElementById('prog').style.width = `${progress}%`;
 
-            const isReady = completed === state.length && validateAll();
             const btn = document.getElementById('btn-wa');
+            const statusText = document.getElementById('status-text');
+            const unlockBtn = document.getElementById('btn-unlock');
+
+            if (isLocked) {
+                btn.disabled = false;
+                btn.innerText = "✅ INFORME ENVIADO Y CERRADO";
+                btn.style.background = "var(--primary)";
+                statusText.innerText = "Este informe ya no permite más ediciones";
+                statusText.style.color = "var(--primary)";
+                unlockBtn.classList.remove('hidden');
+                return;
+            } else {
+                unlockBtn.classList.add('hidden');
+                btn.style.background = "#25d366";
+                btn.innerText = "ENVIAR POR WHATSAPP";
+            }
+
+            const isReady = completed === state.length && validateAll();
             btn.disabled = !isReady;
 
-            const statusText = document.getElementById('status-text');
             if (completed < state.length) {
                 statusText.innerText = `Pendientes: ${state.length - completed} reportes`;
                 statusText.style.color = "#94a3b8";
@@ -502,12 +522,11 @@
         }
 
         function validateAll() {
-            // Un precursor que participa DEBE tener horas (al menos 1)
             return state.every(m => {
                 if (m.type !== 'PUBLICADOR' && m.participo === 'SI') {
                     return (parseInt(m.hrs) > 0);
                 }
-                return true;
+                return (m.participo !== null);
             });
         }
 
@@ -521,36 +540,37 @@
                 const card = document.createElement('div');
                 card.id = `c-${i}`;
                 card.className = getCardClass(i);
+                if (isLocked) card.style.opacity = "0.8";
 
-                const isPending = state[i].participo === null;
                 const hoursClass = (state[i].type !== 'PUBLICADOR' && state[i].participo === 'SI' && (parseInt(state[i].hrs) || 0) === 0) ? 'invalid' : '';
+                const dis = isLocked ? 'disabled' : '';
 
                 card.innerHTML = `
                     <span class="name">${p.name}</span>
                     <div class="cat-selector">
-                        <button class="cat-btn ${state[i].type === 'PUBLICADOR' ? 'active-pub' : ''}" onclick="changeCat(${i},'PUBLICADOR')">PUB</button>
-                        <button class="cat-btn ${state[i].type === 'AUXILIAR' ? 'active-aux' : ''}" onclick="changeCat(${i},'AUXILIAR')">AUX</button>
-                        <button class="cat-btn ${state[i].type === 'REGULAR' ? 'active-reg' : ''}" onclick="changeCat(${i},'REGULAR')">REG</button>
+                        <button class="cat-btn ${state[i].type === 'PUBLICADOR' ? 'active-pub' : ''}" ${dis} onclick="changeCat(${i},'PUBLICADOR')">PUB</button>
+                        <button class="cat-btn ${state[i].type === 'AUXILIAR' ? 'active-aux' : ''}" ${dis} onclick="changeCat(${i},'AUXILIAR')">AUX</button>
+                        <button class="cat-btn ${state[i].type === 'REGULAR' ? 'active-reg' : ''}" ${dis} onclick="changeCat(${i},'REGULAR')">REG</button>
                     </div>
                     <div class="grid">
                         <div class="group ${state[i].type !== 'PUBLICADOR' ? 'hidden' : ''}" id="p-box-${i}">
                             <label>Participó</label>
                             <div class="selector">
-                                <button class="sel-btn ${state[i].participo === 'SI' ? 'active-si' : ''}" onclick="setSt(${i},'SI')">SÍ</button>
-                                <button class="sel-btn ${state[i].participo === 'NO' ? 'active-no' : ''}" onclick="setSt(${i},'NO')">NO</button>
+                                <button class="sel-btn ${state[i].participo === 'SI' ? 'active-si' : ''}" ${dis} onclick="setSt(${i},'SI')">SÍ</button>
+                                <button class="sel-btn ${state[i].participo === 'NO' ? 'active-no' : ''}" ${dis} onclick="setSt(${i},'NO')">NO</button>
                             </div>
                         </div>
                         <div class="group">
                             <label>Estudios</label>
-                            <input type="number" oninput="updateVal(${i},'est',this.value)" value="${state[i].est}">
+                            <input type="number" ${dis} oninput="updateVal(${i},'est',this.value)" value="${state[i].est}">
                         </div>
                         <div class="group ${state[i].type === 'PUBLICADOR' ? 'hidden' : ''}" id="h-box-${i}">
                             <label>Horas</label>
-                            <input type="number" class="${hoursClass}" placeholder="0" oninput="updateVal(${i},'hrs',this.value)" value="${state[i].hrs}">
+                            <input type="number" ${dis} class="${hoursClass}" placeholder="0" oninput="updateVal(${i},'hrs',this.value)" value="${state[i].hrs}">
                         </div>
                         <div class="group full">
                             <label>Notas</label>
-                            <textarea oninput="updateVal(${i},'not',this.value)" placeholder="Salud, etc...">${state[i].not}</textarea>
+                            <textarea ${dis} oninput="updateVal(${i},'not',this.value)" placeholder="Observaciones...">${state[i].not}</textarea>
                         </div>
                     </div>`;
                 list.appendChild(card);
@@ -566,20 +586,13 @@
         }
 
         function updateVal(i, key, val) {
+            if (isLocked) return;
             state[i][key] = val;
-            if (key === 'hrs') {
-                const card = document.getElementById(`c-${i}`);
-                const input = card.querySelector('#h-box-' + i + ' input');
-                if (state[i].type !== 'PUBLICADOR' && state[i].participo === 'SI' && (parseInt(val) || 0) === 0) {
-                    input.classList.add('invalid');
-                } else {
-                    input.classList.remove('invalid');
-                }
-            }
             save();
         }
 
         function changeCat(i, newType) {
+            if (isLocked) return;
             state[i].type = newType;
             if (newType !== 'PUBLICADOR') {
                 state[i].participo = 'SI';
@@ -592,14 +605,31 @@
         }
 
         function setSt(i, v) {
+            if (isLocked) return;
             state[i].participo = v;
             render();
             save();
         }
 
         function send() {
+            if (isLocked) {
+                abrirWhatsApp();
+                return;
+            }
+
             if (!validateAll()) return;
 
+            // BLINDAR: Activar bloqueo persistente
+            isLocked = true;
+            localStorage.setItem(CACHE_KEY + '_locked', 'true');
+
+            updateSummary();
+            render(); // Refrescar para deshabilitar todo
+
+            abrirWhatsApp();
+        }
+
+        function abrirWhatsApp() {
             let msg = `📊 *INFORME G${g} - ${m.toUpperCase()}*\n\n`;
             publishers.forEach((p, i) => {
                 msg += `👤 *${p.name}* [${state[i].type.slice(0, 3)}]\n`;
@@ -628,6 +658,15 @@
                 document.querySelector('.footer').classList.remove('keyboard-open');
             }
         });
+
+        function unlock() {
+            if (confirm("¿Desea reabrir el informe para editar?")) {
+                isLocked = false;
+                localStorage.removeItem(CACHE_KEY + '_locked');
+                updateSummary();
+                render();
+            }
+        }
 
         init();
     </script>
