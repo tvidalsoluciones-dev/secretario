@@ -5,18 +5,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Informe del Grupo</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #1e3c72;
-            --secondary: #2a5298;
-            --accent: #3498db;
-            --bg: #f8f9fa;
-            --card-bg: #ffffff;
-            --text: #1c1e21;
-            --success: #2ecc71;
-            --danger: #e74c3c;
-            --gray: #95a5a6;
+            --primary: #0f172a;
+            --secondary: #1e293b;
+            --accent: #3b82f6;
+            --success: #10b981;
+            --danger: #ef4444;
+            --bg: #f8fafc;
         }
 
         * {
@@ -28,30 +25,37 @@
         }
 
         body {
-            background: var(--bg);
-            color: var(--text);
-            padding: 15px;
-            padding-bottom: 120px;
+            background-color: var(--bg);
+            color: var(--primary);
             display: flex;
             flex-direction: column;
             align-items: center;
+            min-height: 100vh;
+            padding: 20px 15px 120px 15px;
         }
 
-        .header {
+        .app-header {
             width: 100%;
             max-width: 500px;
-            text-align: center;
-            margin-bottom: 20px;
-            padding: 25px;
             background: linear-gradient(135deg, var(--primary), var(--secondary));
+            padding: 40px 20px;
+            border-radius: 24px;
             color: white;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(30, 60, 114, 0.2);
+            text-align: center;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
         }
 
-        .header h1 {
-            font-size: 1.5rem;
+        .app-header h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
             margin-bottom: 5px;
+        }
+
+        .app-header p {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            font-weight: 300;
         }
 
         .container {
@@ -59,165 +63,202 @@
             max-width: 500px;
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 20px;
         }
 
+        /* Tarjeta Premium */
         .card {
-            background: var(--card-bg);
-            border-radius: 18px;
-            padding: 20px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-            border-left: 8px solid #ddd;
-            transition: all 0.3s ease;
+            background: white;
+            border-radius: 22px;
+            padding: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+            border-left: 10px solid #cbd5e1;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .card.active-si {
-            border-left-color: var(--success);
-        }
-
-        .card.active-no {
-            border-left-color: var(--danger);
-        }
-
-        .card.active-precursor {
+        .card.cat-regular {
             border-left-color: var(--accent);
         }
 
+        .card.cat-auxiliar {
+            border-left-color: #f59e0b;
+        }
+
+        /* Ambar para auxiliar */
+        .card.status-si {
+            border-left-color: var(--success);
+        }
+
+        .card.status-no {
+            border-left-color: var(--danger);
+        }
+
         .card-header {
-            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
         }
 
         .name {
-            font-weight: 600;
-            font-size: 1.15rem;
+            font-size: 1.2rem;
+            font-weight: 700;
             color: var(--primary);
-            display: block;
+            text-transform: uppercase;
         }
 
         .badge {
-            display: inline-block;
             font-size: 0.7rem;
-            background: #eee;
-            padding: 3px 10px;
-            border-radius: 20px;
             font-weight: 700;
-            margin-top: 5px;
-            color: #666;
+            background: #f1f5f9;
+            color: #64748b;
+            padding: 4px 12px;
+            border-radius: 100px;
+            transition: 0.3s;
         }
 
-        .controls {
+        .badge.active-reg {
+            background: var(--accent);
+            color: white;
+        }
+
+        .badge.active-aux {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 15px;
+            gap: 16px;
         }
 
-        .full-width {
+        .group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .full {
             grid-column: span 2;
         }
 
         label {
-            font-size: 0.75rem;
-            color: var(--gray);
+            font-size: 0.7rem;
             font-weight: 700;
+            color: #64748b;
             text-transform: uppercase;
-            margin-bottom: 8px;
-            display: block;
+            letter-spacing: 0.05em;
         }
 
-        /* Botones SI/NO */
+        /* Selector SI/NO */
         .selector {
             display: flex;
-            background: #f0f2f5;
+            background: #f1f5f9;
             padding: 4px;
-            border-radius: 12px;
+            border-radius: 14px;
             height: 50px;
         }
 
-        .btn-sel {
+        .sel-btn {
             flex: 1;
             border: none;
             background: transparent;
-            cursor: pointer;
             font-weight: 700;
+            cursor: pointer;
             border-radius: 10px;
-            color: #7f8c8d;
+            color: #64748b;
+            transition: 0.2s;
         }
 
-        .btn-sel.active-si {
+        .sel-btn.active-si {
             background: var(--success);
             color: white;
         }
 
-        .btn-sel.active-no {
+        .sel-btn.active-no {
             background: var(--danger);
             color: white;
         }
 
-        /* Inputs */
-        input[type="number"],
+        input,
         textarea {
-            width: 100%;
-            height: 50px;
-            border: 2px solid #f0f2f5;
-            background: #f0f2f5;
+            background: #f1f5f9;
+            border: none;
             border-radius: 12px;
+            height: 50px;
             text-align: center;
             font-size: 1.1rem;
             font-weight: 600;
             outline: none;
+            width: 100%;
+            transition: 0.2s;
+        }
+
+        input:focus {
+            background: white;
+            box-shadow: 0 0 0 2px var(--accent);
         }
 
         textarea {
-            height: 60px;
+            height: 75px;
             text-align: left;
-            padding: 10px;
+            padding: 12px;
             font-size: 0.9rem;
             font-weight: 400;
         }
 
-        /* Switch de Precursor */
-        .pre-toggle {
+        /* Switch Dinámico */
+        .config-row {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background: #eef2f7;
-            padding: 12px 15px;
-            border-radius: 12px;
-            margin-bottom: 15px;
+            background: #f8fafc;
+            padding: 12px 16px;
+            border-radius: 14px;
+            margin-bottom: 18px;
+            border: 1px dashed #cbd5e1;
+            transition: 0.3s;
         }
 
-        .pre-toggle span {
-            font-size: 0.85rem;
+        .config-row.is-active {
+            background: #eff6ff;
+            border-color: var(--accent);
+        }
+
+        .config-row span {
+            font-size: 0.8rem;
             font-weight: 700;
-            color: var(--primary);
+            color: var(--secondary);
         }
 
-        .p-switch {
+        .switch {
             position: relative;
             display: inline-block;
             width: 44px;
             height: 24px;
         }
 
-        .p-switch input {
+        .switch input {
             opacity: 0;
             width: 0;
             height: 0;
         }
 
-        .p-slider {
+        .slider {
             position: absolute;
             cursor: pointer;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background-color: #ccc;
+            background-color: #cbd5e1;
             transition: .4s;
             border-radius: 24px;
         }
 
-        .p-slider:before {
+        .slider:before {
             position: absolute;
             content: "";
             height: 18px;
@@ -229,17 +270,12 @@
             border-radius: 50%;
         }
 
-        input:checked+.p-slider {
+        input:checked+.slider {
             background-color: var(--accent);
         }
 
-        input:checked+.p-slider:before {
+        input:checked+.slider:before {
             transform: translateX(20px);
-        }
-
-        /* Control de visibilidad */
-        .hidden {
-            display: none !important;
         }
 
         .footer {
@@ -248,183 +284,200 @@
             left: 0;
             width: 100%;
             padding: 20px;
-            background: white;
-            border-top: 1px solid #ddd;
-            z-index: 1000;
-            box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.05);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 100;
+            border-top: 1px solid #e2e8f0;
         }
 
         .btn-send {
             width: 100%;
             max-width: 460px;
             margin: 0 auto;
-            padding: 18px;
+            height: 60px;
             background: #25d366;
             color: white;
             border: none;
             border-radius: 18px;
             font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            box-shadow: 0 8px 15px rgba(37, 211, 102, 0.2);
+            font-weight: 700;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 10px;
+            cursor: pointer;
+            box-shadow: 0 10px 15px -3px rgba(37, 211, 102, 0.3);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 60px 20px;
+            color: #64748b;
         }
     </style>
 </head>
 
 <body>
 
-    <div class="header">
-        <h1 id="group-title">INFORME DE GRUPO</h1>
-        <p id="month-title">...</p>
-    </div>
+    <header class="app-header">
+        <h1 id="g-label">SISTEMA DE INFORMES</h1>
+        <p id="m-label">Cargando datos del grupo...</p>
+    </header>
 
-    <div class="container" id="publisher-list"></div>
+    <main class="container" id="list"></main>
 
-    <div class="footer">
-        <button class="btn-send" onclick="sendReport()">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
-                <path
-                    d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.815 9.815 0 0 0 12.04 2m.01 1.67c2.2 0 4.26.86 5.82 2.42 1.56 1.56 2.41 3.63 2.41 5.83 0 4.54-3.7 8.23-8.24 8.23-1.48 0-2.93-.39-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.32a8.188 8.188 0 0 1-1.26-4.38c.01-4.54 3.7-8.21 8.25-8.21m-4.98 5.46c-.12 0-.27.02-.38.03-.33.04-.55.19-.65.33-.12.16-.27.42-.27.8 0 .44.09.84.28 1.21.05.11.83 2.11 2.37 3.51.52.48 1.05.85 1.53 1.11.39.21.78.33 1.15.39.11.02.26.03.38.03.33 0 .55-.1.65-.19.14-.13.27-.33.27-.61 0-.31-.03-.49-.07-.58-.04-.08-.13-.13-.27-.2-.14-.07-.84-.41-.98-.46-.14-.06-.23-.08-.33-.08-.1 0-.2.03-.3.08l-.44.24c-.1.05-.2.06-.31 0-.11-.05-.24-.13-.41-.26-.18-.13-.41-.35-.65-.62-.25-.28-.46-.57-.6-.82-.07-.12-.08-.22-.03-.31.05-.1.21-.24.31-.35.1-.11.13-.2.2-.31.06-.11.03-.22 0-.31-.03-.08-.27-.66-.38-.91-.11-.25-.23-.21-.33-.21z" />
-            </svg>
+    <div class="footer" id="f-box">
+        <button class="btn-send" onclick="send()">
             <span>ENVIAR INFORME POR WHATSAPP</span>
         </button>
     </div>
 
     <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        const groupNum = urlParams.get('g') || "N/A";
-        const monthEscaped = urlParams.get('m') || "Actual";
-        const rawData = urlParams.get('d') || "Ejemplo|Publicador";
+        const params = new URLSearchParams(window.location.search);
+        const g = params.get('g');
+        const m = params.get('m');
+        const d = params.get('d');
+        const s = params.get('s');
 
+        const list = document.getElementById('list');
         const publishers = [];
-        const parts = rawData.split('|');
-        for (let i = 0; i < parts.length; i += 2) {
-            if (parts[i]) publishers.push({ name: parts[i], cat: parts[i + 1] || "Publicador" });
+
+        if (!d) {
+            document.getElementById('g-label').innerText = "ESPERANDO DATOS";
+            document.getElementById('m-label').innerText = "Vuelva a entrar con un enlace de grupo.";
+            list.innerHTML = '<div class="empty"><h3>Bienvenido al Sistema</h3><p>Use el link enviado por el Secretario para abrir su lista.</p></div>';
+            document.getElementById('f-box').classList.add('hidden');
+        } else {
+            const parts = d.split('|');
+            for (let i = 0; i < parts.length; i += 2) {
+                if (parts[i]) publishers.push({ name: parts[i], cat: parts[i + 1] || "Publicador" });
+            }
+            render();
         }
 
-        const reportData = publishers.map(p => ({
-            isPrecursor: p.cat.includes('Regular') || p.cat.includes('Auxiliar') || p.cat.includes('Especial'),
-            participo: 'NO'
-        }));
+        // Estado local de los datos
+        const state = publishers.map(p => {
+            const isReg = p.cat.toLowerCase().includes('regular') || p.cat.toLowerCase().includes('especial');
+            const isAux = p.cat.toLowerCase().includes('auxiliar');
+            return {
+                type: isReg ? 'REGULAR' : (isAux ? 'AUXILIAR' : 'PUBLICADOR'),
+                participo: (isReg || isAux) ? 'SI' : 'NO'
+            };
+        });
 
         function render() {
-            document.getElementById('group-title').innerText = `GRUPO ${groupNum}`;
-            document.getElementById('month-title').innerText = `Informe de ${monthEscaped.replace(/_/g, ' ')}`;
-
-            const listContainer = document.getElementById('publisher-list');
-            listContainer.innerHTML = '';
+            document.getElementById('g-label').innerText = `INFORME GRUPO ${g}`;
+            document.getElementById('m-label').innerText = `Mes de ${m.replace(/_/g, ' ')}`;
+            list.innerHTML = '';
 
             publishers.forEach((p, i) => {
+                const isPre = (state[i].type === 'REGULAR' || state[i].type === 'AUXILIAR');
                 const card = document.createElement('div');
-                card.id = `card-${i}`;
-                card.className = `card ${reportData[i].isPrecursor ? 'active-precursor' : 'active-no'}`;
+                card.id = `c-${i}`;
+                // Estilo inicial según categoría
+                card.className = `card cat-${state[i].type.toLowerCase()}`;
+                if (state[i].type === 'PUBLICADOR') card.className = `card status-${state[i].participo.toLowerCase()}`;
 
                 card.innerHTML = `
                     <div class="card-header">
-                        <span class="name">${p.name.toUpperCase()}</span>
-                        <span class="badge" id="badge-${i}">${p.cat}</span>
+                        <span class="name">${p.name}</span>
+                        <span class="badge ${state[i].type === 'REGULAR' ? 'active-reg' : (state[i].type === 'AUXILIAR' ? 'active-aux' : '')}" id="b-${i}">
+                            ${state[i].type}
+                        </span>
                     </div>
 
-                    <div class="pre-toggle">
-                        <span>¿ES PRECURSOR REGULAR O AUXILIAR?</span>
-                        <label class="p-switch">
-                            <input type="checkbox" id="pre-${i}" ${reportData[i].isPrecursor ? 'checked' : ''} onchange="togglePrecursor(${i})">
-                            <span class="p-slider"></span>
+                    <!-- Toggle dinámico solo para Publicadores -->
+                    <div class="config-row ${state[i].type === 'REGULAR' ? 'hidden' : ''}" id="row-${i}">
+                        <span>SESIÓN DE AUXILIAR ESTE MES</span>
+                        <label class="switch">
+                            <input type="checkbox" id="sw-${i}" ${state[i].type === 'AUXILIAR' ? 'checked' : ''} onchange="toggleCat(${i})">
+                            <span class="slider"></span>
                         </label>
                     </div>
 
-                    <div class="controls">
-                        <!-- Casilla Participó (Solo para NO Precursores) -->
-                        <div class="control-group ${reportData[i].isPrecursor ? 'hidden' : ''}" id="part-group-${i}">
+                    <div class="grid">
+                        <!-- Participó: Solo visible para PUBLICADOR -->
+                        <div class="group ${isPre ? 'hidden' : ''}" id="p-box-${i}">
                             <label>Participó</label>
                             <div class="selector">
-                                <button class="btn-sel" id="si-${i}" onclick="setStatus(${i}, 'SI')">SÍ</button>
-                                <button class="btn-sel active-no" id="no-${i}" onclick="setStatus(${i}, 'NO')">NO</button>
+                                <button class="sel-btn" id="si-${i}" onclick="setSt(${i},'SI')">SÍ</button>
+                                <button class="sel-btn active-no" id="no-${i}" onclick="setSt(${i},'NO')">NO</button>
                             </div>
                         </div>
 
-                        <div class="control-group">
+                        <div class="group">
                             <label>Estudios</label>
-                            <input type="number" id="est-${i}" value="0" min="0">
+                            <input type="number" id="est-${i}" value="0">
                         </div>
 
-                        <!-- Casilla Horas (Solo para Precursores) -->
-                        <div class="control-group ${reportData[i].isPrecursor ? '' : 'hidden'}" id="hrs-group-${i}">
-                            <label>Horas</label>
-                            <input type="number" id="hrs-${i}" value="0" min="0">
+                        <!-- Horas: Solo visible para REGULAR y AUXILIAR -->
+                        <div class="group ${isPre ? '' : 'hidden'}" id="h-box-${i}">
+                            <label>Horas del Mes</label>
+                            <input type="number" id="hrs-${i}" value="0">
                         </div>
 
-                        <div class="control-group full-width">
+                        <div class="group full">
                             <label>Notas / Observaciones</label>
-                            <textarea id="nota-${i}" placeholder="Escribe aquí..."></textarea>
+                            <textarea id="not-${i}" placeholder="Salud, mudanza, etc."></textarea>
                         </div>
                     </div>
                 `;
-                listContainer.appendChild(card);
+                list.appendChild(card);
             });
         }
 
-        function togglePrecursor(i) {
-            const isChecked = document.getElementById(`pre-${i}`).checked;
-            reportData[i].isPrecursor = isChecked;
+        function toggleCat(i) {
+            const isChecked = document.getElementById(`sw-${i}`).checked;
+            state[i].type = isChecked ? 'AUXILIAR' : 'PUBLICADOR';
 
-            const partGroup = document.getElementById(`part-group-${i}`);
-            const hrsGroup = document.getElementById(`hrs-group-${i}`);
-            const card = document.getElementById(`card-${i}`);
-            const badge = document.getElementById(`badge-${i}`);
+            const isPre = (state[i].type === 'AUXILIAR');
+            document.getElementById(`p-box-${i}`).classList.toggle('hidden', isPre);
+            document.getElementById(`h-box-${i}`).classList.toggle('hidden', !isPre);
 
+            const b = document.getElementById(`b-${i}`);
+            b.innerText = state[i].type;
+            b.className = `badge ${isChecked ? 'active-aux' : ''}`;
+
+            const c = document.getElementById(`c-${i}`);
             if (isChecked) {
-                partGroup.classList.add('hidden');
-                hrsGroup.classList.remove('hidden');
-                card.className = "card active-precursor";
-                badge.innerText = "Precursor (Reg/Aux)";
+                c.className = "card cat-auxiliar";
+                state[i].participo = 'SI';
             } else {
-                partGroup.classList.remove('hidden');
-                hrsGroup.classList.add('hidden');
-                card.className = "card active-no";
-                badge.innerText = "Publicador";
-                setStatus(i, 'NO'); // Reset por defecto
+                c.className = `card status-${state[i].participo.toLowerCase()}`;
             }
         }
 
-        function setStatus(i, val) {
-            if (reportData[i].isPrecursor) return; // No aplica a precursores
-            reportData[i].participo = val;
-            const btnSi = document.getElementById(`si-${i}`);
-            const btnNo = document.getElementById(`no-${i}`);
-            const card = document.getElementById(`card-${i}`);
-
-            btnSi.className = `btn-sel ${val === 'SI' ? 'active-si' : ''}`;
-            btnNo.className = `btn-sel ${val === 'NO' ? 'active-no' : ''}`;
-            card.className = `card active-${val.toLowerCase()}`;
+        function setSt(i, v) {
+            if (state[i].type !== 'PUBLICADOR') return;
+            state[i].participo = v;
+            document.getElementById(`si-${i}`).className = `sel-btn ${v === 'SI' ? 'active-si' : ''}`;
+            document.getElementById(`no-${i}`).className = `sel-btn ${v === 'NO' ? 'active-no' : ''}`;
+            document.getElementById(`c-${i}`).className = `card status-${v.toLowerCase()}`;
         }
 
-        function sendReport() {
-            let message = `📊 *INFORME G${groupNum} - ${monthEscaped.toUpperCase()}*\n\n`;
+        function send() {
+            let msg = `📊 *INFORME G${g} - ${m.toUpperCase()}*\n\n`;
             publishers.forEach((p, i) => {
-                const isPre = reportData[i].isPrecursor;
                 const est = document.getElementById(`est-${i}`).value || 0;
-                const nota = document.getElementById(`nota-${i}`).value.trim();
+                const nota = document.getElementById(`not-${i}`).value.trim();
+                msg += `👤 *${p.name.toUpperCase()}*\n`;
 
-                message += `👤 *${p.name.toUpperCase()}*\n`;
-                if (isPre) {
-                    const hrs = document.getElementById(`hrs-${i}`).value || 0;
-                    message += `PRECURSOR | Estudios: ${est} | Horas: ${hrs}`;
+                if (state[i].type === 'PUBLICADOR') {
+                    msg += `[PUBLICADOR] Participó: ${state[i].participo} | Est: ${est}`;
                 } else {
-                    const part = reportData[i].participo;
-                    message += `Participó: ${part} | Estudios: ${est}`;
+                    const hrs = document.getElementById(`hrs-${i}`).value || 0;
+                    msg += `[${state[i].type}] Est: ${est} | Horas: ${hrs}`;
                 }
-                if (nota) message += `\nNota: ${nota}`;
-                message += `\n\n`;
-            });
-            window.location.href = `https://wa.me/?text=${encodeURIComponent(message)}`;
-        }
 
-        render();
+                if (nota) msg += `\nNotas: ${nota}`;
+                msg += `\n\n`;
+            });
+            window.location.href = `https://wa.me/${s}?text=${encodeURIComponent(msg)}`;
+        }
     </script>
 </body>
 
