@@ -391,26 +391,48 @@
     </div>
 
     <script>
+        // Variables globales y captura robusta de parámetros
         const params = new URLSearchParams(window.location.search);
-        const g = params.get('g') || "";
-        const m = params.get('m') || "";
-        const token = params.get('t') || "";
-        const s = params.get('s') || "";
+
+        function getParam(name) {
+            const lowName = name.toLowerCase();
+            for (let [key, value] of params.entries()) {
+                if (key.toLowerCase() === lowName) return value;
+            }
+            // Fallback manual por si URLSearchParams falla en algún móvil
+            const search = window.location.search.substring(1);
+            const pairs = search.split('&');
+            for (const pair of pairs) {
+                const [k, v] = pair.split('=');
+                if (k && k.toLowerCase() === lowName) return decodeURIComponent(v);
+            }
+            return "";
+        }
+
+        let g = getParam('g');
+        let m = getParam('m');
+        const token = getParam('t');
+        const s = getParam('s');
 
         function decodeToken(str) {
+            if (!str) return null;
             try {
                 let b64 = str.replace(/-/g, '+').replace(/_/g, '/');
                 while (b64.length % 4) b64 += '=';
-                return decodeURIComponent(escape(window.atob(b64)));
-            } catch (e) { return null; }
+                return decodeURIComponent(atob(b64).split('').map(function (c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+            } catch (e) {
+                console.error("Error decoding token:", e);
+                return null;
+            }
         }
 
         function getHash(str) {
             let hash = 0;
             for (let i = 0; i < str.length; i++) {
-                const char = str.charCodeAt(i);
-                hash = ((hash << 5) - hash) + char;
-                hash = hash & hash;
+                hash = ((hash << 5) - hash) + str.charCodeAt(i);
+                hash |= 0; // Forzar a entero de 32 bits
             }
             return Math.abs(hash).toString(36);
         }
@@ -422,8 +444,12 @@
         let CACHE_KEY = "";
 
         function init() {
+            // Actualización inmediata de etiquetas (aunque token falle)
+            if (g) document.getElementById('g-label').innerText = `GRUPO ${g}`;
+            if (m) document.getElementById('m-label').innerText = `Mes de ${m}`;
+
             if (!token) {
-                document.getElementById('m-label').innerText = "⚠️ Enlace sin datos";
+                document.getElementById('m-label').innerText = "⚠️ Enlace sin datos (Token faltante)";
                 return;
             }
 
@@ -435,7 +461,7 @@
 
             const raw = decodeToken(token);
             if (!raw) {
-                document.getElementById('m-label').innerText = "⚠️ Enlace dañado";
+                document.getElementById('m-label').innerText = "⚠️ Enlace dañado o incompatible";
                 return;
             }
 
